@@ -1270,6 +1270,14 @@ private:
 
     void run() override
     {
+        // Stop mic capture first. MicAudioSender's worker thread calls
+        // LiSendMicAudioFrame(), which must not race with LiStopConnection()
+        // tearing down the control stream below. stop() joins the thread.
+        if (m_Session->m_MicAudioSender) {
+            m_Session->m_MicAudioSender->stop();
+            m_Session->m_MicAudioSender.reset();
+        }
+
         // Only quit the running app if our session terminated gracefully
         bool shouldQuit =
                 !m_Session->m_UnexpectedTermination &&
@@ -1710,6 +1718,25 @@ bool Session::startConnectionAsync()
         // We already displayed an error dialog in the stage failure
         // listener.
         return false;
+    }
+
+    // Start mic passthrough if the user enabled it and the host advertised
+    // support for it. A failure here (no capture device, mic permission
+    // denied, etc.) is not fatal to the stream.
+    if (m_Preferences->streamMicToHost) {
+        if (LiGetHostFeatureFlags() & SS_FF_MIC_INPUT) {
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Starting microphone passthrough");
+            m_MicAudioSender = std::make_unique<MicAudioSender>();
+            if (!m_MicAudioSender->start(m_Preferences->micCaptureDevice.toStdString())) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                            "Failed to start microphone capture; mic passthrough disabled for this session");
+                m_MicAudioSender.reset();
+            }
+        }
+        else {
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                        "Microphone streaming is enabled, but the host does not support it");
+        }
     }
 
     emit connectionStarted();

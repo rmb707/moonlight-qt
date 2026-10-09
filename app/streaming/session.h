@@ -9,6 +9,7 @@
 #include "input/input.h"
 #include "video/decoder.h"
 #include "audio/renderers/renderer.h"
+#include "audio/MicAudioSender.h"
 #include "video/overlaymanager.h"
 
 class SupportedVideoFormatList : public QList<int>
@@ -279,6 +280,10 @@ private:
     OPUS_MULTISTREAM_CONFIGURATION m_OriginalAudioConfig;
     int m_AudioSampleCount;
     Uint32 m_DropAudioEndTime;
+
+    // Client microphone -> host passthrough (moonlight-mic). Only created when
+    // the user enabled it and the host advertised SS_FF_MIC_INPUT.
+    std::unique_ptr<MicAudioSender> m_MicAudioSender;
 
     Overlay::OverlayManager m_OverlayManager;
 

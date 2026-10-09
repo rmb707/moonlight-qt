@@ -8,6 +8,7 @@ on:
   pull_request:
     branches:
       - master
+  workflow_dispatch:
 
 concurrency:
   group: build-${{ github.ref }}
@@ -26,13 +27,16 @@ jobs:
           CI_VERSION=`echo ${GITHUB_SHA} | cut -c1-6`
           echo "ci_version=${CI_VERSION}" >> "${GITHUB_OUTPUT}"
 
+  # Forks (e.g. the mic-passthrough branch) only need the macOS build
   build-appimage:
+    if: github.repository == 'moonlight-stream/moonlight-qt'
     needs: setup
     uses: ./.github/workflows/build-appimage.yml
     with:
       ci_version: ${{ needs.setup.outputs.ci_version }}
 
   build-steamlink:
+    if: github.repository == 'moonlight-stream/moonlight-qt'
     needs: setup
     uses: ./.github/workflows/build-steamlink.yml
     with:

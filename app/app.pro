@@ -193,6 +193,7 @@ SOURCES += \
     streaming/input/reltouch.cpp \
     streaming/session.cpp \
     streaming/audio/audio.cpp \
+    streaming/audio/MicAudioSender.cpp \
     streaming/audio/renderers/sdlaud.cpp \
     gui/computermodel.cpp \
     gui/appmodel.cpp \
@@ -231,6 +232,8 @@ HEADERS += \
     streaming/session.h \
     streaming/audio/renderers/renderer.h \
     streaming/audio/renderers/sdl.h \
+    streaming/audio/MicAudioSender.h \
+    streaming/audio/micpermission.h \
     gui/computermodel.h \
     gui/appmodel.h \
     streaming/video/decoder.h \
@@ -410,7 +413,8 @@ macx {
     SOURCES += \
         streaming/video/ffmpeg-renderers/vt_base.mm \
         streaming/video/ffmpeg-renderers/vt_avsamplelayer.mm \
-        streaming/video/ffmpeg-renderers/vt_metal.mm
+        streaming/video/ffmpeg-renderers/vt_metal.mm \
+        streaming/audio/micpermission_mac.mm
 
     HEADERS += \
         streaming/video/ffmpeg-renderers/vt.h
