@@ -216,6 +216,15 @@ bool MicAudioSender::start(const std::string& captureDeviceName)
 
     m_CaptureDevice = SDL_OpenAudioDevice(
         captureDeviceNamePtr, /*iscapture=*/1, &want, &have, /*allowed_changes=*/0);
+    if (m_CaptureDevice == 0 && captureDeviceNamePtr != nullptr) {
+        // The selected device may have been unplugged; fall back to the default.
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+                    "MicAudioSender: failed to open capture device '%s' (%s); trying system default",
+                    captureDeviceNamePtr, SDL_GetError());
+        captureDeviceNamePtr = nullptr;
+        m_CaptureDevice = SDL_OpenAudioDevice(
+            nullptr, /*iscapture=*/1, &want, &have, /*allowed_changes=*/0);
+    }
     if (m_CaptureDevice == 0) {
         SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
                     "MicAudioSender: SDL_OpenAudioDevice(capture, %s) failed: %s",
